@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enquiry Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            overflow: hidden;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 10px;
+            background-color: #fafafa;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .message.user {
+            text-align: right;
+            color: blue;
+        }
+        .message.support {
+            text-align: left;
+            color: green;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: calc(100% - 22px);
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .logout-button {
+            background-color: #dc3545;
+        }
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+        .faculty-list {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .faculty-item {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="messages" id="messagesContainer"></div>
+    <input type="text" id="messageInput" placeholder="Type your enquiry..." />
+    <button onclick="sendMessage()">Send</button>
+    <button class="logout-button" onclick="logout()">Logout</button>
+</div>
+<script>
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const messageText = input.value.trim();
+        const messagesContainer = document.getElementById('messagesContainer');
+        if (messageText) {
+            // Append user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.textContent = messageText;
+            messagesContainer.appendChild(userMessage);
+            // Process the message and generate a response
+            if (messageText.toLowerCase().includes('hello')) {
+                displayOptions(messagesContainer);
+            } else if (!isNaN(messageText) && messageText > 0 && messageText <= 5) {
+                processSelection(parseInt(messageText), messagesContainer);
+            } else {
+                const supportMessage = document.createElement('div');
+                supportMessage.className = 'message support';
+                supportMessage.textContent = "I'm sorry, I didn't understand that. Please type 'hello' to see the options.";
+                messagesContainer.appendChild(supportMessage);
+            }
+            // Clear the input
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to bottom
+        }
+    }
+    function displayOptions(messagesContainer) {
+        const supportMessage = document.createElement('div');
+        supportMessage.className = 'message support';
+        supportMessage.innerHTML = `
+            <strong>How can I help? Please select:</strong><br>
+            1. Current Fees<br>
+            2. Missing Result<br>
+            3. Email Problem<br>
+            4. Directions<br>
+            5. Faculties Chairpersons
+        `;
+        messagesContainer.appendChild(supportMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to bottom
+    }
+    function processSelection(selection, messagesContainer) {
+        const studentName = "Student"; // Replace this with the actual student name if needed
+        fetch('/processQuery', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ selection: selection, studentName: studentName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const supportMessage = document.createElement('div');
+            supportMessage.className = 'message support';
+            supportMessage.textContent = data.message;
+            messagesContainer.appendChild(supportMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to bottom
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    function logout() {
+        localStorage.removeItem('loggedIn'); // Clear the login flag
+        window.location.href = '/logreg'; // Redirect to login page
+    }
+    
+    // Function to display faculties and chairpersons
+    function displayFaculties(messagesContainer) {
+        const facultyMessage = document.createElement('div');
+        facultyMessage.className = 'message support';
+        facultyMessage.innerHTML = `
+            <strong>Faculties and Chairpersons:</strong>
+            <div class="faculty-list">
+                <div class="faculty-item">1. Faculty of Science - <a href="mailto:chair@university.edu">chair@university.edu</a></div>
+                <div class="faculty-item">2. Faculty of Arts - <a href="mailto:chair@university.edu">chair@university.edu</a></div>
+                <div class="faculty-item">3. Faculty of Engineering - <a href="mailto:chair@university.edu">chair@university.edu</a></div>
+            </div>
+        `;
+        messagesContainer.appendChild(facultyMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to bottom
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Registration Forms</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h2 {
+            text-align: center;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .toggle-form {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="formContainer">
+    <div id="loginForm">
+        <h2>Login</h2>
+        <input type="email" placeholder="Email" id="loginEmail" required>
+        <input type="password" placeholder="Password" id="loginPassword" required>
+        <button onclick="login()">Login</button>
+        <div class="toggle-form">
+            Don't have an account? <a href="#" onclick="toggleForms()">Register</a>
+        </div>
+    </div>
+    <div id="registerForm" style="display: none;">
+        <h2>Register</h2>
+        <input type="text" placeholder="Username" id="registerUsername" required>
+        <input type="email" placeholder="Email" id="registerEmail" required>
+        <input type="password" placeholder="Password" id="registerPassword" required>
+        <button onclick="register()">Register</button>
+        <div class="toggle-form">
+            Already have an account? <a href="#" onclick="toggleForms()">Login</a>
+        </div>
+    </div>
+</div>
+<script>
+    // Check if the user is already logged in
+    if (localStorage.getItem('loggedIn')) {
+        window.location.href = '/virtualassist';
+    }
+    function toggleForms() {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        if (loginForm.style.display === "none") {
+            loginForm.style.display = "block";
+            registerForm.style.display = "none";
+        } else {
+            loginForm.style.display = "none";
+            registerForm.style.display = "block";
+        }
+    }
+    function login() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: email, password: password }) // Assuming username is email
+        })
+        .then(response => {
+            if (response.ok) {
+                localStorage.setItem('loggedIn', 'true'); // Set login flag
+                window.location.href = '/virtualassist'; // Redirect to virtual assistant
+            } else {
+                alert('Invalid credentials');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    function register() {
+        const username = document.getElementById('registerUsername').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: username, email: email, password: password })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Registration successful!');
+                toggleForms(); // Switch to login form
+            } else {
+                alert('User already exists');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+</body>
+</html>
